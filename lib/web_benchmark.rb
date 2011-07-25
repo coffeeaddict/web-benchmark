@@ -1,6 +1,11 @@
 require 'net/http'
+require 'nokogiri'
+require './lib/results'
+require './lib/interpretor'
 
 class WebBenchmark
+  attr_accessor :start_point, :concurrent, :count, :noisy
+
   def self.store(url, start, stop, status)
     @@stats ||= {}
     @@stats[url] ||= []
@@ -16,11 +21,51 @@ class WebBenchmark
     @concurrent  = concurrent
     @count       = count
 
-    @quiet       = true
+    @noisy       = false
+  end
+
+  def full_test(cool_down=5)
+    puts "Perfoming a full test"
+    interpretor = Interpretor.new(false)
+
+    conc_before  = self.concurrent
+
+    puts "Determening base line"
+    # first, establish a base line 1 client - 20 requests
+    self.concurrent = 1
+    self.start
+
+    interpretor.sets << Results.get_all
+    Results.clear
+
+    puts "Letting the server cool down"
+    sleep cool_down
+
+    puts "Half strength test"
+    self.concurrent = conc_before / 2
+    self.start
+
+    interpretor.sets << Results.get_all
+    Results.clear
+
+    puts "Letting the server cool down"
+    sleep cool_down
+
+    puts "Full strength test"
+    self.concurrent = conc_before
+
+    self.start
+
+    interpretor.sets << Results.get_all
+
+    return interpretor
   end
 
   def start
     threads = []
+
+    start = Time.now
+
     puts "Starting benchmark..."
     shout "Starting #{@concurrent} threads"
     @concurrent.times { |i|
@@ -34,6 +79,7 @@ class WebBenchmark
     shout "Waiting for #{threads.count} threads"
     threads.collect(&:join)
 
+    puts "Benchmark took: #{"%.2f" % (Time.now - start)}"
     return
   end
 
@@ -50,7 +96,8 @@ class WebBenchmark
       return
     end
 
-    self.class.store(url, start, Time.now, res.code)
+    r = Results.instance(url)
+    r.record(start, Time.now, res.code)
 
     if res.body
       doc = Nokogiri::HTML(res.body)
@@ -85,7 +132,10 @@ class WebBenchmark
         tries += 1
       end
 
-      return if next_url.nil?
+      if next_url.nil?
+        shout("Cannot find another link on #{url}")
+        return
+      end
 
       slumber = ((rand(500)+1)/100.0)
       shout "#{me[:name]}: sleep #{slumber}"
@@ -109,7 +159,7 @@ class WebBenchmark
   end
 
   def shout msg
-    return if !!@quiet
+    return if !@noisy
     $stderr.puts msg
   end
 

@@ -2,55 +2,68 @@
 
 require 'rubygems'
 require 'bundler/setup'
-require 'nokogiri'
+require 'getopt/std'
 
 require './lib/web_benchmark'
-require './lib/statistics'
 
-class Time
-  def before?(other)
-    self < other
-  end
+opts = Getopt::Std.getopts("r:c:vfC:")
 
-  def after?(other)
-    self > other
-  end
-end
+url   = ARGV[0]
 
-url   = ARGV[0] || "http://devschuur.simplic.it/yoshikai/"
-count = (ARGV[1] || 5).to_i
-conc  = (ARGV[2] || 5).to_i
+raise "Need an url to benchmark - the site root is usually best" if url.nil?
 
-start = Time.now
+# use easy-going defaults
+count = (opts["r"] || 2).to_i
+conc  = (opts["c"] || 2).to_i
+
 wb = WebBenchmark.new(url, count, conc)
-wb.start
-puts "Benchmark took: #{"%.2f" % (Time.now - start)}"
+wb.noisy = true if opts["v"]
 
-stats = WebBenchmark.stats
+if opts["f"]
+  interpretor = wb.full_test((opts['C'] || 10).to_i)
+  res = interpretor.compare
 
-total    = 0
-avg      = []
-conc_req = []
-requests = stats.collect { |url, info| info }.flatten
+  base = res.shift
+  half = res.shift
+  full = res.shift
 
-requests.each do |request|
-  time  = request[:stop] - request[:start]
-  total += time
-  avg   << time
+  puts ":: Base line"
+  puts "\tAttempted: #{count}"
+  puts "\tPerformed: #{base[:sample]}"
+  puts "\tConcurrent: #{base[:concurrent]}   -- !! THIS SHOULD BE 0"
+  puts "\tAvg: #{"%.2fs" % base[:mean]} - std_dev: #{"%.2fs" % base[:std_dev]}"
+  puts "---\n\n"
 
-  (requests - conc_req - [request]).each do |other|
-    if other[:start].after?(request[:start]) and other[:start].before?(request[:stop])
-      # puts "#{other[:start].to_i} between #{request[:start].to_i} and #{request[:stop].to_i}"
-      conc_req << other
-    end
-  end
+
+  puts ":: Half strength"
+  puts "\tAttepmted: #{count * (conc/2)}"
+  puts "\tPerformed: #{half[:sample]}"
+  puts "\tConcurrent: #{half[:concurrent]}"
+  puts "\tAvg: #{"%.2fs" % half[:mean]} - std_dev: #{"%.2fs" % half[:std_dev]}"
+  puts "\t#{"%.2f%%" % half[:slower]} slower"
+  puts "---\n\n"
+
+  puts ":: Full strength"
+  puts "\tAttepmted: #{count * conc}"
+  puts "\tPerformed: #{full[:sample]}"
+  puts "\tConcurrent: #{full[:concurrent]}"
+  puts "\tAvg: #{"%.2fs" % full[:mean]} - std_dev: #{"%.2fs" % full[:std_dev]}"
+  puts "\t#{"%.2f%%" % full[:slower]} slower"
+
+  puts "---\n\n"
+
+else
+  wb.start
+
+  interpretor = WebBenchmark::Interpretor.new()
+  info        = interpretor.interpret
+
+
+  puts "Attempted: #{count * conc} requests"
+  puts "Performed: #{info[:sample]} requests"
+  puts "Total time spent: #{"%.2fs" % info[:total]}"
+  puts "Avg time spent: #{"%.2fs" % info[:mean]} - std dev: #{"%.2fs" % info[:std_dev]}"
+  puts "Concurrent requests: #{info[:concurrent]}"
 end
 
-mean    = Statistics.mean(avg)
-std_dev = Statistics.standard_deviation(avg)
 
-puts "Attempted: #{count * conc} requests"
-puts "Performed: #{requests.count} requests"
-puts "Total time spent: #{"%.2fs" % total}"
-puts "Avg time spent: #{"%.2fs" % mean} - std dev: #{"%.2fs" % std_dev}"
-puts "Concurrent requests: #{conc_req.count}"

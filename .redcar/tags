@@ -1,19 +1,40 @@
-1311360094
-Statistics	/home/hartog/work/benchmark/lib/statistics.rb	module Statistics
-Time	/home/hartog/work/benchmark/main.rb	class Time
-WebBenchmark	/home/hartog/work/benchmark/lib/web_benchmark.rb	class WebBenchmark
-after?	/home/hartog/work/benchmark/main.rb	  def after?(other)
-before?	/home/hartog/work/benchmark/main.rb	  def before?(other)
-benchmark	/home/hartog/work/benchmark/lib/web_benchmark.rb	  def benchmark(url)
-ceiling	/home/hartog/work/benchmark/lib/statistics.rb	  def self.ceiling(population)
-fetch	/home/hartog/work/benchmark/lib/web_benchmark.rb	  def fetch(uri)
-floor	/home/hartog/work/benchmark/lib/statistics.rb	  def self.floor(population)
-initialize	/home/hartog/work/benchmark/lib/web_benchmark.rb	  def initialize(start_point, count=10, concurrent=2)
-mean	/home/hartog/work/benchmark/lib/statistics.rb	  def self.mean(population)
-median	/home/hartog/work/benchmark/lib/statistics.rb	  def self.median(population)
-shout	/home/hartog/work/benchmark/lib/web_benchmark.rb	  def shout 
-standard_deviation	/home/hartog/work/benchmark/lib/statistics.rb	  def self.standard_deviation(population)
-start	/home/hartog/work/benchmark/lib/web_benchmark.rb	  def start
-stats	/home/hartog/work/benchmark/lib/web_benchmark.rb	  def self.stats
-store	/home/hartog/work/benchmark/lib/web_benchmark.rb	  def self.store(url, start, stop, status)
-variance	/home/hartog/work/benchmark/lib/statistics.rb	  def self.variance(population)
+1311586334
+Interpretor	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	  class Interpretor
+Results	/home/hartog/work/git/web-benchmark/lib/results.rb	  class Results
+Statistics	/home/hartog/work/git/web-benchmark/lib/statistics.rb	module Statistics
+Time	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	class Time
+WebBenchmark	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	class WebBenchmark
+WebBenchmark	/home/hartog/work/git/web-benchmark/lib/results.rb	class WebBenchmark
+WebBenchmark	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	class WebBenchmark
+after?	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	  def after?(other)
+before?	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	  def before?(other)
+benchmark	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def benchmark(url)
+ceiling	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.ceiling(population)
+clear	/home/hartog/work/git/web-benchmark/lib/results.rb	    def self.clear
+compare	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	    def compare
+concurrent	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :concurrent, :count, :noisy
+count	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :concurrent, :count, :noisy
+fetch	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def fetch(uri)
+floor	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.floor(population)
+full_test	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def full_test(cool_down=5)
+get_all	/home/hartog/work/git/web-benchmark/lib/results.rb	    def self.get_all
+initialize	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	    def initialize(set=nil)
+initialize	/home/hartog/work/git/web-benchmark/lib/results.rb	    def initialize(url)
+initialize	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def initialize(start_point, count=10, concurrent=2)
+instance	/home/hartog/work/git/web-benchmark/lib/results.rb	    def self.instance(url)
+instances	/home/hartog/work/git/web-benchmark/lib/results.rb	    def self.instances
+interpret	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	    def interpret(set=@sets.first)
+mean	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.mean(population)
+median	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.median(population)
+noisy	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :concurrent, :count, :noisy
+record	/home/hartog/work/git/web-benchmark/lib/results.rb	    def record(start, stop, status)
+sets	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	    attr_accessor :sets
+shout	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def shout 
+standard_deviation	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.standard_deviation(population)
+start	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def start
+start_point	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :concurrent, :count, :noisy
+stats	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def self.stats
+store	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def self.store(url, start, stop, status)
+times	/home/hartog/work/git/web-benchmark/lib/results.rb	    attr_accessor :url, :times
+url	/home/hartog/work/git/web-benchmark/lib/results.rb	    attr_accessor :url, :times
+variance	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.variance(population)
