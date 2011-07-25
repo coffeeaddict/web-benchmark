@@ -1,4 +1,5 @@
 class WebBenchmark
+  # a results class
   class Results
     def self.clear
       @@instances = {}
@@ -10,6 +11,8 @@ class WebBenchmark
 
     def self.get_all
       @@instances.dup
+    rescue
+      {}
     end
 
     def self.instance(url)
@@ -27,7 +30,10 @@ class WebBenchmark
     end
 
     def record(start, stop, status)
-      @times << { :start => start, :stop => stop, :status => status}
+      @times << {
+        :start  => start,
+        :stop   => stop,
+        :status => status}
     end
   end
 end

@@ -1,40 +1,52 @@
-1311586334
+1311603583
+Fetcher	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	  class Fetcher
 Interpretor	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	  class Interpretor
 Results	/home/hartog/work/git/web-benchmark/lib/results.rb	  class Results
 Statistics	/home/hartog/work/git/web-benchmark/lib/statistics.rb	module Statistics
 Time	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	class Time
+VERSION	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  VERSION=
+WebBenchmark	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	class WebBenchmark
 WebBenchmark	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	class WebBenchmark
 WebBenchmark	/home/hartog/work/git/web-benchmark/lib/results.rb	class WebBenchmark
 WebBenchmark	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	class WebBenchmark
 after?	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	  def after?(other)
 before?	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	  def before?(other)
 benchmark	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def benchmark(url)
+body	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    attr_accessor :url, :start, :stop, :result, :body
 ceiling	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.ceiling(population)
 clear	/home/hartog/work/git/web-benchmark/lib/results.rb	    def self.clear
 compare	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	    def compare
-concurrent	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :concurrent, :count, :noisy
-count	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :concurrent, :count, :noisy
+count	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :visitors, :count, :noisy, :include_assets
+fetch	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    def fetch
 fetch	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def fetch(uri)
+fetch_assets	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    def fetch_assets(cached)
 floor	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.floor(population)
 full_test	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def full_test(cool_down=5)
+get	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    def get(uri)
 get_all	/home/hartog/work/git/web-benchmark/lib/results.rb	    def self.get_all
+include_assets	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :visitors, :count, :noisy, :include_assets
+initialize	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    def initialize(url)
 initialize	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	    def initialize(set=nil)
 initialize	/home/hartog/work/git/web-benchmark/lib/results.rb	    def initialize(url)
-initialize	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def initialize(start_point, count=10, concurrent=2)
+initialize	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def initialize(start_point, count=5, visitors=2, sleep=500)
 instance	/home/hartog/work/git/web-benchmark/lib/results.rb	    def self.instance(url)
 instances	/home/hartog/work/git/web-benchmark/lib/results.rb	    def self.instances
 interpret	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	    def interpret(set=@sets.first)
 mean	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.mean(population)
 median	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.median(population)
-noisy	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :concurrent, :count, :noisy
+msec	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	  def msec
+noisy	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :visitors, :count, :noisy, :include_assets
 record	/home/hartog/work/git/web-benchmark/lib/results.rb	    def record(start, stop, status)
+result	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    attr_accessor :url, :start, :stop, :result, :body
 sets	/home/hartog/work/git/web-benchmark/lib/interpretor.rb	    attr_accessor :sets
 shout	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def shout 
 standard_deviation	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.standard_deviation(population)
+start	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    attr_accessor :url, :start, :stop, :result, :body
 start	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def start
-start_point	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :concurrent, :count, :noisy
-stats	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def self.stats
-store	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  def self.store(url, start, stop, status)
+start_point	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :visitors, :count, :noisy, :include_assets
+stop	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    attr_accessor :url, :start, :stop, :result, :body
 times	/home/hartog/work/git/web-benchmark/lib/results.rb	    attr_accessor :url, :times
+url	/home/hartog/work/git/web-benchmark/lib/fetcher.rb	    attr_accessor :url, :start, :stop, :result, :body
 url	/home/hartog/work/git/web-benchmark/lib/results.rb	    attr_accessor :url, :times
 variance	/home/hartog/work/git/web-benchmark/lib/statistics.rb	  def self.variance(population)
+visitors	/home/hartog/work/git/web-benchmark/lib/web_benchmark.rb	  attr_accessor :start_point, :visitors, :count, :noisy, :include_assets

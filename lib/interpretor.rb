@@ -3,11 +3,15 @@ require './lib/statistics'
 # monkey path the Time class to easily identify concurrent requests
 class Time
   def before?(other)
-    self < other
+    self.msec < other.msec
   end
 
   def after?(other)
-    self > other
+    self.msec > other.msec
+  end
+
+  def msec
+    (self.to_f * 100).to_i
   end
 end
 
@@ -70,7 +74,7 @@ class WebBenchmark
           base = res
           base[:slower] = 0
         else
-          res[:slower] = 100 - ((base[:mean] / res[:mean]) * 100)
+          res[:slower] = ((res[:mean] / base[:mean]) * 100) - 100
         end
       end
 

@@ -1,58 +1,83 @@
-require 'net/http'
-require 'nokogiri'
+require './lib/fetcher'
 require './lib/results'
 require './lib/interpretor'
 
+# Perform a visitors benchmark on a web resource (be it app or site)
+#
+# == Drill down
+# * Start X threads
+# * Let each thread perform an average of Y requests (count -/+ rand(count))
+# * Make sure the user waits < Z seconds before requesting the next page
+#
+# This way you can mimic a number of visitors on your site and see what that
+# does for
+# * The load on your webserver (keep an eye on that!)
+# * The speed per request
+#
+# == Assets
+# By default each visitor will request the assets (img, script, css) it
+# encounters (unless seen before). The time it takes to load these assets is
+# added to the request time
+#
 class WebBenchmark
-  attr_accessor :start_point, :concurrent, :count, :noisy
+  VERSION='1.0.0'
 
-  def self.store(url, start, stop, status)
-    @@stats ||= {}
-    @@stats[url] ||= []
-    @@stats[url] << { :start => start, :stop => stop, :status => status }
-  end
+  attr_accessor :start_point, :visitors, :count, :noisy, :include_assets
 
-  def self.stats
-    @@stats
-  end
-
-  def initialize(start_point, count=10, concurrent=2)
+  def initialize(start_point, count=5, visitors=2, sleep=500)
     @start_point = start_point
-    @concurrent  = concurrent
+    @visitors    = visitors
     @count       = count
 
-    @noisy       = false
+    sleep *= 100 if sleep < 100
+    @sleep = sleep
+
+    @noisy          = false
+    @include_assets = true
   end
 
+  # Perform a full test - this will show you how things 'scale'
+  #
+  # First, a base line is established by performing #count visits with only
+  # one #visitors. This would generate a sample that should serve as the
+  # 'nominal' operation of the resource
+  #
+  # Then we let things cool down for some seconds and perform a test with only
+  # half the number of visitors requested
+  #
+  # Cool down again and finaly go in full blast.
+  #
+  # You will be handed an interpretor holding 3 result sets to play with
+  #
   def full_test(cool_down=5)
     puts "Perfoming a full test"
     interpretor = Interpretor.new(false)
 
-    conc_before  = self.concurrent
+    visitors_before  = self.visitors
 
     puts "Determening base line"
     # first, establish a base line 1 client - 20 requests
-    self.concurrent = 1
+    self.visitors = 1
     self.start
 
     interpretor.sets << Results.get_all
     Results.clear
 
-    puts "Letting the server cool down"
+    puts "Letting the server cool down #{cool_down}s"
     sleep cool_down
 
-    puts "Half strength test"
-    self.concurrent = conc_before / 2
+    puts "\n:: Half strength test"
+    self.visitors = visitors_before / 2
     self.start
 
     interpretor.sets << Results.get_all
     Results.clear
 
-    puts "Letting the server cool down"
+    puts "Letting the server cool down #{cool_down}s"
     sleep cool_down
 
-    puts "Full strength test"
-    self.concurrent = conc_before
+    puts "\n:: Full strength test"
+    self.visitors = visitors_before
 
     self.start
 
@@ -61,17 +86,22 @@ class WebBenchmark
     return interpretor
   end
 
+  # start all #visitors
+  #
   def start
     threads = []
 
     start = Time.now
 
-    puts "Starting benchmark..."
-    shout "Starting #{@concurrent} threads"
-    @concurrent.times { |i|
+    puts "Starting benchmark #{@count}/#{@visitors}..."
+    @visitors.times { |i|
       threads << Thread.new(@start_point, @count) do |url, count|
-        Thread.current[:count] = count
-        Thread.current[:name]  = "<Thread:#{i}>"
+        Thread.current[:count]        = (
+          rand(2) == 1 ? count - rand(count) : count + rand(count)
+        )
+        Thread.current[:name]         = "[Visitor-#{i+1}]"
+        Thread.current[:assets_cache] = []
+
         benchmark(url)
       end
     }
@@ -83,34 +113,58 @@ class WebBenchmark
     return
   end
 
+  # how well does the resource perform.
+  #
+  # The total time of the request is stored in WebBenchmark::Results
+  #
+  # before the benchmark is started, a sleep time is introduced. This helps to
+  # spread out (and randomize) the #visitors
+  #
+  # The requested page is analyzed and a next link is choosen if the visitor
+  # still has pages left to visit
+  #
   def benchmark(url)
     me = Thread.current
 
-    shout "#{me[:name]}:#{me[:count]} : Benchmarking #{url}"
+    if @sleep != 0
+      slumber = ((rand(@sleep)+1)/100.0)
+      shout "#{me[:name]}: sleep #{slumber}"
 
-    start = Time.now
-    res = fetch(url)
+      Kernel::sleep(slumber)
+    end
 
-    if res.nil?
+    shout "#{me[:name]}:#{me[:count]} : #{url}"
+
+    fetcher = Fetcher.new(url)
+    res = fetcher.fetch
+
+    if res == false
       shout "#{me[:name]}: error on #{url}"
       return
     end
 
-    r = Results.instance(url)
-    r.record(start, Time.now, res.code)
+    if @include_assets == true and !fetcher.body.nil?
+      fetched = fetcher.fetch_assets(me[:assets_cache])
+      shout("Fetched assets: #{fetched.join(", ")}")
+      me[:assets_cache] += fetched
+    end
 
-    if res.body
-      doc = Nokogiri::HTML(res.body)
-      links = []
-      doc.css('a').each do |a|
+    r = Results.instance(url)
+    r.record(fetcher.start, fetcher.stop, fetcher.result.status)
+
+    links = []
+    if fetcher.body
+      fetcher.body.css('a').each do |a|
         link = a[:href]
         if link =~ /^\//
           link = @start_point + link
 
         elsif link !~ /https?:/
-
-          base = url.gsub(/[^\/]+$/, '')
-          link = base + link
+          begin
+            base = url.gsub(/[^\/]+$/, '')
+            link = base + link
+          rescue
+          end
         end
 
         links << link unless link !~ Regexp.new(@start_point)
@@ -133,28 +187,23 @@ class WebBenchmark
       end
 
       if next_url.nil?
-        shout("Cannot find another link on #{url}")
-        return
+        shout("Cannot find another link on #{url} #{fetcher.result.status}- restarting on start point")
+        return benchmark(@start_point)
       end
-
-      slumber = ((rand(500)+1)/100.0)
-      shout "#{me[:name]}: sleep #{slumber}"
-
-      Kernel::sleep(slumber)
 
       benchmark(next_url.gsub(/([^:])\/\//, '\1/'))
     end
   end
 
+  # fetch the page
   def fetch(uri)
-    url = URI.parse(uri)
 
-    req = Net::HTTP::Get.new(url.path)
+    res = sess.get(uri)
 
-    Net::HTTP.start(url.host, url.port) {|http|
-      http.request(req)
-    }
-  rescue
+    return [ res, sess ]
+
+  rescue Exception, Timeout::Error => e
+    shout "Error: #{e.message}"
     nil
   end
 
