@@ -73,7 +73,6 @@ class WebBenchmark
       start = Time.now
       assets.each do |asset|
         if asset =~ /^\// and @session.base_url.nil?
-          puts "Setting base to #{@url} for #{asset}"
           @session.base_url = @url
         end
 
