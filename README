@@ -42,6 +42,10 @@ FULL TEST
 SETUP/INSTALL
   Run `bundle install`.
 
+LICENSE
+  This software is released under the MIT License. See LICENSE.txt for more
+  details
+
 BUGS/CAVEATS/TODO
 
   * This DOES NOT keep an eye on the load of the server you are benchmarking.
