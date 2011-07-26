@@ -1,17 +1,17 @@
-require 'patron'
+require 'mechanize'
 require 'nokogiri'
 
 class WebBenchmark
   # A fetcher based on patron
   class Fetcher
-    attr_accessor :url, :start, :stop, :result, :body
+    attr_accessor :url, :start, :stop, :result, :body, :session
 
     def initialize(url, visitor)
       @url = url
-      @session = Patron::Session.new
-      @session = Patron::Session.new
-      @session.timeout = 20
-      @session.headers['User-Agent'] = "Web-Benchmark/#{WebBenchmark::VERSION}-#{visitor}"
+      @session = Mechanize.new
+      @session.open_timeout = 10
+      @session.read_timeout = 300
+      @session.user_agent   = "Web-Benchmark/#{WebBenchmark::VERSION}-#{visitor}"
     end
 
     # fetch the #url and measure the time it took
@@ -20,20 +20,21 @@ class WebBenchmark
       @result = get @url
       @stop   = Time.now
 
-      if @result.status == 200
-        @body = Nokogiri::HTML(@result.body)
+      if @result.code.to_i == 200
+        @body = @result.parser
       end
 
-      return @result.status < 400 ? true : false
+      return @result.code.to_i < 400 ? true : false
 
     rescue Exception => ex
       @result = FakeResult.new
+      $stderr.puts "Ex: #{ex.message}"
       return false
 
     rescue Patron::TimeoutError, Timeout::Error => ex
       @stop = Time.now
       @result = FakeResult.new
-      @result.status = "timeout"
+      @result.code = "timeout"
 
       return false
 
@@ -72,13 +73,9 @@ class WebBenchmark
 
       start = Time.now
       assets.each do |asset|
-        if asset =~ /^\// and @session.base_url.nil?
-          @session.base_url = @url
-        end
-
         begin
           get asset
-        rescue Patron::TimeoutError, Timeout::Error => ex
+        rescue Mechanize::ResponseCodeError, Timeout::Error => ex
           assets -= [asset]
         end
       end
@@ -90,12 +87,12 @@ class WebBenchmark
   end
 
   class FakeResult
-    attr_accessor :status
+    attr_accessor :code
     attr_reader :body
 
     def initialize
       @body = nil
-      @status = 500
+      @code = 500
     end
   end
 end

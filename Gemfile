@@ -3,4 +3,4 @@ source "http://rubygems.org"
 
 gem "nokogiri"
 gem "getopt"
-gem "patron"
+gem "mechanize"

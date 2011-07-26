@@ -146,26 +146,30 @@ class WebBenchmark
     end
 
     r = Results.instance(url)
-    r.record(fetcher.start, fetcher.stop, fetcher.result.status)
+    r.record(fetcher.start, fetcher.stop, fetcher.result.code)
 
     links = []
-    if fetcher.body
-      fetcher.body.css('a').each do |a|
-        link = a[:href]
-        if link =~ /^\//
-          link = @start_point + link
+    fetcher.result.links.each do |link|
+      uri = link.uri.to_s
+      url = if uri =~ /^\//
+        @start_point + uri
 
-        elsif link !~ /https?:/
-          begin
-            base = url.gsub(/[^\/]+$/, '')
-            link = base + link
-          rescue
-          end
+      elsif uri !~ /https?:/
+        begin
+          base = url.gsub(/[^\/]+$/, '')
+          base + uri
+        rescue
         end
 
-        links << link unless link !~ Regexp.new(@start_point)
+      else
+        uri
+
       end
+
+      links << url
     end
+
+    links = links.select { |l| l =~ Regexp.new(@start_point) }
 
     if me[:count] > 1
       me[:count] -= 1
@@ -183,7 +187,7 @@ class WebBenchmark
       end
 
       if next_url.nil?
-        shout("Cannot find another link on #{url} #{fetcher.result.status}- restarting on start point")
+        shout("Cannot find another link on #{url} #{fetcher.result.code}- restarting on start point")
         return benchmark(@start_point)
       end
 
