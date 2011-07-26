@@ -6,12 +6,12 @@ class WebBenchmark
   class Fetcher
     attr_accessor :url, :start, :stop, :result, :body
 
-    def initialize(url)
+    def initialize(url, visitor)
       @url = url
       @session = Patron::Session.new
       @session = Patron::Session.new
       @session.timeout = 20
-      @session.headers['User-Agent'] = "Web-Benchmark/#{WebBenchmark::VERSION}"
+      @session.headers['User-Agent'] = "Web-Benchmark/#{WebBenchmark::VERSION}-#{visitor}"
     end
 
     # fetch the #url and measure the time it took

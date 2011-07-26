@@ -131,7 +131,7 @@ class WebBenchmark
 
     shout "#{me[:name]}: #{url}"
 
-    fetcher = Fetcher.new(url)
+    fetcher = Fetcher.new(url, me[:name])
     res = fetcher.fetch
 
     if res == false
