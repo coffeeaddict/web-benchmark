@@ -59,3 +59,5 @@ BUGS/CAVEATS/TODO
     need to decide if that is a good or a bad thing
 
   * All the other caveats and need-to-knows for benchmarking websites apply
+
+  * TODO : Post form data - would be rather nice for testing applications...
