@@ -1,3 +1,5 @@
+# A helper with nice methods for statistics calculation
+#
 module Statistics
   def self.variance(population)
     n    = 0

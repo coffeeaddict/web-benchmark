@@ -55,7 +55,6 @@ class WebBenchmark
 
     visitors_before  = self.visitors
 
-    puts "Determening base line"
     # first, establish a base line 1 client - 20 requests
     self.visitors = 1
     self.start
@@ -66,7 +65,6 @@ class WebBenchmark
     puts "Letting the server cool down #{cool_down}s"
     sleep cool_down
 
-    puts "\n:: Half strength test"
     self.visitors = visitors_before / 2
     self.start
 
@@ -76,9 +74,7 @@ class WebBenchmark
     puts "Letting the server cool down #{cool_down}s"
     sleep cool_down
 
-    puts "\n:: Full strength test"
     self.visitors = visitors_before
-
     self.start
 
     interpretor.sets << Results.get_all
@@ -93,7 +89,7 @@ class WebBenchmark
 
     start = Time.now
 
-    puts "Starting benchmark #{@count}/#{@visitors}..."
+    puts "Starting benchmark with #{@visitors} visitors for #{@count} pages..."
     @visitors.times { |i|
       threads << Thread.new(@start_point, @count) do |url, count|
         Thread.current[:count]        = (
@@ -133,7 +129,7 @@ class WebBenchmark
       Kernel::sleep(slumber)
     end
 
-    shout "#{me[:name]}:#{me[:count]} : #{url}"
+    shout "#{me[:name]}: #{url}"
 
     fetcher = Fetcher.new(url)
     res = fetcher.fetch
@@ -195,17 +191,6 @@ class WebBenchmark
     end
   end
 
-  # fetch the page
-  def fetch(uri)
-
-    res = sess.get(uri)
-
-    return [ res, sess ]
-
-  rescue Exception, Timeout::Error => e
-    shout "Error: #{e.message}"
-    nil
-  end
 
   def shout msg
     return if !@noisy

@@ -14,6 +14,7 @@ class WebBenchmark
       @session.headers['User-Agent'] = "Web-Benchmark/#{WebBenchmark::VERSION}"
     end
 
+    # fetch the #url and measure the time it took
     def fetch
       @start  = Time.now
       @result = get @url
@@ -31,41 +32,54 @@ class WebBenchmark
 
     end
 
-    def get(uri)
+    def get(uri) # :nodoc:
       @session.get uri
     end
 
-    def fetch_assets(cached)
+    # fetch the assets on a page. Supply a cache (list of assets not to be
+    # fetched)
+    #
+    # The #stop time is increased with the amount of seconds it took to fetch
+    # the assets
+    #
+    def fetch_assets(cached=[])
       return [] if @body.nil?
 
-      start = Time.now
-      fetched = []
+
+      assets = []
+
       @body.css("img").each do |img|
         next if cached.include? img[:src]
 
-        get img[:src]
-        fetched << img[:src]
+        assets << img[:src]
       end
 
       @body.css("script").each do |script|
         next if script[:src].nil? or script[:src] == ""
         next if cached.include? script[:src]
 
-        get script[:src]
-        fetched << script[:src]
+        assets << script[:src]
       end
 
       @body.css("link").each do |link|
         next if link[:href].nil? or link[:href] == ""
         next if cached.include? link[:href]
 
-        get link[:href]
-        fetched << link[:href]
+        assets << link[:href]
       end
 
+      start = Time.now
+      assets.each do |asset|
+        if asset =~ /^\// and @session.base_url.nil?
+          puts "Setting base to #{@url} for #{asset}"
+          @session.base_url = @url
+        end
+
+        get asset
+      end
       @stop += (Time.now - start)
 
-      return fetched
+      return assets
     end
 
   end

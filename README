@@ -1,0 +1,57 @@
+Web Benchmark -- Perform a web benchmark
+
+SYNOPSIS
+bin/wb.rb [options] http://www.yourdomain.com/
+
+OPTIONS
+  -h                   : Print this screen and exit
+  -v                   : Be verbose
+  -f                   : Perform a full test
+  -a                   : Do not fetch assets
+  -r requests          : The number of requests each visitor should perform on
+                         average (default 3)
+  -c visitors_count    : The number of visitors to launch (default 5)
+  -C seconds           : The number of seconds to cool down in a full test
+                         (default 10)
+  -s seconds           : Sleep less then X seconds between requests. Specify
+                         times 100 (default 2000 [= 20 seconds]).
+                         Specify 0 if you don't want the visitors to sleep
+                         between requests.
+
+
+VISITORS
+  The Web Benchmark simulates visitors to your online resource. It creates
+  the number of specified visitors and they click random links on your page.
+
+  Each visitor has a pre determined number of pages to visit around the
+  number you have specified, where N = n [-|+] rand(n)  [n = specified nr]
+
+  Each visitor has a seperate cache for assets and doesn't download an asset
+  twice.
+
+
+FULL TEST
+  Wen performing a full test, the benchmark is conducted 3 times. First with
+  only one visitor, to establish a base line.
+
+  Then with half the visitors, and finally with all the visitors.
+
+  You can set a cool down period between the tests. Between tests visitors and
+  caches are destroyed
+
+SETUP/INSTALL
+  Run `bundle install`.
+
+BUGS/CAVEATS/TODO
+
+  * This DOES NOT keep an eye on the load of the server you are benchmarking.
+    You should!
+
+  * Measured times are not fully accurate, althoug measurements are taken as
+    close as possible to the requests, there is still code I don't control or
+    own in there, but I think it can be neglected
+
+  * When you use S3 (or any other CDN) for images, they to are collected. Still
+    need to decide if that is a good or a bad thing
+
+  * All the other caveats and need-to-knows for benchmarking websites apply
