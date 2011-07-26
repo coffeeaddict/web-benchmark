@@ -98,8 +98,29 @@ class WebBenchmark
       results
     end
 
+    # get the requested urls
     def urls
-      @sets.collect(&:url)
+      @sets.collect(&:keys).flatten
     end
+
+    def statuses
+      @sets.collect { |set| set.collect { |url, requests| requests.times } }.flatten.collect { |t| t[:status] }
+    end
+
+    def overview
+      overview = {}
+      @sets.collect do |set|
+        set.collect do |url, requests|
+          overview[url] ||= {}
+          requests.times.each do |t|
+            overview[url][t[:status]] ||= []
+            overview[url][t[:status]] << (t[:stop] - t[:start])
+          end
+        end
+      end
+
+      return overview
+    end
+
   end
 end

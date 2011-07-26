@@ -121,6 +121,16 @@ else
   puts "Avg request time: #{"%.2fs" % info[:mean]} - std dev: #{"%.2fs" % info[:std_dev]}"
   puts "Min: #{"%.2fs" % info[:min]}, Max: #{"%.2fs" % info[:max]}"
   puts "Concurrent requests: #{info[:concurrent]}"
+
+  puts
+  puts "Request overview:"
+  interpretor.overview.each do |url, info|
+    puts "#{url}"
+    info.each do |status, durations|
+      puts "\t#{status} : " + durations.collect { |d| "%.2fs" % d }.join(", ")
+    end
+  end
+
 end
 
 
