@@ -26,8 +26,15 @@ class WebBenchmark
 
       return @result.status < 400 ? true : false
 
-    rescue Exception, Timeout::Error => ex
-      $stderr.puts ex.message
+    rescue Exception => ex
+      @result = FakeResult.new
+      return false
+
+    rescue Patron::TimeoutError, Timeout::Error => ex
+      @stop = Time.now
+      @result = FakeResult.new
+      @result.status = "timeout"
+
       return false
 
     end
@@ -45,28 +52,23 @@ class WebBenchmark
     def fetch_assets(cached=[])
       return [] if @body.nil?
 
-
       assets = []
 
       @body.css("img").each do |img|
-        next if cached.include? img[:src]
-
         assets << img[:src]
       end
 
       @body.css("script").each do |script|
         next if script[:src].nil? or script[:src] == ""
-        next if cached.include? script[:src]
-
         assets << script[:src]
       end
 
       @body.css("link").each do |link|
         next if link[:href].nil? or link[:href] == ""
-        next if cached.include? link[:href]
-
         assets << link[:href]
       end
+
+      assets -= cached
 
       start = Time.now
       assets.each do |asset|
@@ -75,12 +77,26 @@ class WebBenchmark
           @session.base_url = @url
         end
 
-        get asset
+        begin
+          get asset
+        rescue Patron::TimeoutError, Timeout::Error => ex
+          assets -= [asset]
+        end
       end
       @stop += (Time.now - start)
 
       return assets
     end
 
+  end
+
+  class FakeResult
+    attr_accessor :status
+    attr_reader :body
+
+    def initialize
+      @body = nil
+      @status = 500
+    end
   end
 end
